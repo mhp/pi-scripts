@@ -20,7 +20,7 @@ fi
 
 echo "Looking for Raspberry Pi..."
 
-while ! ping -c 1 -W 2 $DEFAULT_NAME.local 2>&1 >/dev/null ; do
+while ! ping -c 1 -W 2 $DEFAULT_NAME.local >/dev/null 2>&1 ; do
 	sleep 5
 done
 
@@ -64,7 +64,7 @@ EOD
 
 echo "Looking for Raspberry Pi with new name..."
 
-while ! ping -c 1 -W 2 $NEW_NAME.local 2>&1 >/dev/null ; do
+while ! ping -c 1 -W 2 $NEW_NAME.local >/dev/null 2>&1 ; do
 	sleep 5
 done
 
