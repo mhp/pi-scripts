@@ -98,6 +98,7 @@ expect <( cat << EOD
 EOD
 )
 
+echo
 echo "Looking for Raspberry Pi with new name..."
 wait_for_pi $NEW_NAME.local
 
