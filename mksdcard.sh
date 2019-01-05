@@ -17,8 +17,8 @@ if [ ! -b "$CARD" ] ; then
 	exit 1
 fi
 
-if [ "$(stat --format=%T $CARD)" -ne 0 ] ; then
-	echo $CARD is a partition, not the physical device
+if [ "$(lsblk -ndao TYPE $CARD 2>/dev/null)" != "disk" ] ; then
+	echo $CARD is not a physical device
 	exit 1
 fi
 
