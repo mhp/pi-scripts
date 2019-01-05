@@ -42,6 +42,13 @@ echo "Found Pi at $(getent hosts $DEFAULT_NAME.local | cut -d" " -f 1)"
 # Suppress colours from terminal prompt
 export TERM=xterm-nocolor
 
+# I've got some cheap USB Ethernet adaptors that need extra config
+# to make them work reliably - they are identified by all having the
+# same MAC address.  Prepare a new random MAC in case we detect one
+BADMAC="00:e0:4c:53:44:58"
+GOODMAC="02$(dd if=/dev/urandom count=5 bs=1 status=none | hexdump -v -e '/1 ":%02X"')"
+MACUDEV="ACTION==\\\"add\\\", SUBSYSTEM==\\\"net\\\", ATTR{address}==\\\"$BADMAC\\\", RUN+=\\\"/sbin/ip link set dev \\\$name address $GOODMAC\\\""
+
 expect <( cat << EOD
   spawn ssh $SSH_OPTS pi@$DEFAULT_NAME.local
   expect "assword:"
@@ -65,6 +72,22 @@ expect <( cat << EOD
   expect ":~$ "
   send "sudo update-rc.d dphys-swapfile remove\n"
   expect ":~$ "
+
+  # Detect broken USB ethernet adaptors and apply
+  # config fixups (new mac, enable promisc mode)
+  send "grep -lR $BADMAC /sys/class/net 2>/dev/null\n"
+  expect {
+    -re {/sys/class/net/(\w+)/address} {
+      set adaptor \$expect_out(1,string)
+      puts "Found broken USB ethernet adaptor, fixing..."
+      expect ":~$ "
+      send "sudo sed -i '\\\$iip link set \$adaptor promisc on' /etc/rc.local\n"
+      expect ":~$ "
+      send "echo \'$MACUDEV\' | sudo tee /etc/udev/rules.d/42-fix-mac.rules >/dev/null\n"
+      exp_continue
+    }
+    ":~$ "
+  }
 
   # Do this as late as possible, as it makes sudo throw an error message
   send "sudo sed --in-place -e \"s/$DEFAULT_NAME/$NEW_NAME/\" /etc/hosts\n"
