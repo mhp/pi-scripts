@@ -48,14 +48,14 @@ expect <( cat << EOD
   send "raspberry\n"
   expect ":~$ "
 
-  send "echo $NEW_NAME | sudo tee /etc/hostname\n"
+  send "echo $NEW_NAME | sudo tee /etc/hostname >/dev/null\n"
   expect ":~$ "
-  send "echo PasswordAuthentication no | sudo tee -a /etc/ssh/sshd_config\n"
+  send "echo PasswordAuthentication no | sudo tee -a /etc/ssh/sshd_config >/dev/null\n"
   expect ":~$ "
 
   send "mkdir -m 700 -p ~/.ssh\n"
   expect ":~$ "
-  send "echo \"$IDENTITY\" | tee -a ~/.ssh/authorized_keys\n"
+  send "echo \"$IDENTITY\" | tee -a ~/.ssh/authorized_keys >/dev/null\n"
   expect ":~$ "
 
   # Disable swap
