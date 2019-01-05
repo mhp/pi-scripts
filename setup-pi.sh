@@ -23,11 +23,19 @@ if [ $(echo "$IDENTITY" | grep -c "^ssh") -ne 1 ] ; then
 	exit 1
 fi
 
-echo "Looking for Raspberry Pi..."
+function wait_for_pi {
+	while ! ping -c 1 -W 2 $1 >/dev/null 2>&1 ; do
+		sleep 5
+	done
 
-while ! ping -c 1 -W 2 $DEFAULT_NAME.local >/dev/null 2>&1 ; do
-	sleep 5
-done
+	# Wait for ssh service to start running too
+	while ! timeout 1 echo -n >/dev/tcp/$1/22 2>/dev/null ; do
+		sleep 1
+	done
+}
+
+echo "Looking for Raspberry Pi..."
+wait_for_pi $DEFAULT_NAME.local
 
 echo "Found Pi at $(getent hosts $DEFAULT_NAME.local | cut -d" " -f 1)"
 
@@ -68,9 +76,6 @@ EOD
 )
 
 echo "Looking for Raspberry Pi with new name..."
-
-while ! ping -c 1 -W 2 $NEW_NAME.local >/dev/null 2>&1 ; do
-	sleep 5
-done
+wait_for_pi $NEW_NAME.local
 
 ssh $SSH_OPTS pi@$NEW_NAME.local "echo It Worked!"
