@@ -1,16 +1,16 @@
 #!/bin/bash
 
-DEFAULT_IMAGE=$(ls -1 ~/Downloads/*raspbian*.zip | tail -1)
-CARD=/dev/mmcblk0
-SSID=$(nmcli --terse --fields name connection show --active)
+IMAGE=${IMAGE:-$(ls -1 ~/Downloads/*raspbian*.zip | tail -1)}
+CARD=${CARD:-/dev/mmcblk0}
+SSID=${SSID:-$(nmcli --terse --fields name connection show --active)}
 
-if [ "$(zipinfo -1 $DEFAULT_IMAGE | wc -l)" -ne 1 ] ; then
-	echo $DEFAULT_IMAGE does not look like a raspbian download
-	zipinfo $DEFAULT_IMAGE
+if [ "$(zipinfo -1 $IMAGE | wc -l)" -ne 1 ] ; then
+	echo $IMAGE does not look like a raspbian download
+	zipinfo $IMAGE
 	exit 1
 fi
 
-echo "Using $(basename $DEFAULT_IMAGE)..."
+echo "Using $(basename $IMAGE)..."
 
 if [ ! -b "$CARD" ] ; then
 	echo $CARD is not a block device
@@ -27,8 +27,8 @@ if mount | grep $CARD > /dev/null ; then
 	exit 1
 fi
 
-echo "Copying $(basename $DEFAULT_IMAGE) to $CARD..."
-unzip -p $DEFAULT_IMAGE *.img | sudo dd of=$CARD bs=4M conv=fsync status=progress
+echo "Copying $(basename $IMAGE) to $CARD..."
+unzip -p $IMAGE *.img | sudo dd of=$CARD bs=4M conv=fsync status=progress
 
 # Mount vfat partition and update the boot stuff...
 P1=$(lsblk --list $CARD -o NAME,FSTYPE -np | grep vfat | cut -f 1 -d" ")
