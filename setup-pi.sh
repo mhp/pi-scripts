@@ -10,6 +10,11 @@ if [ -z "$1" ] ; then
 	exit 1
 fi
 
+if ! which expect >/dev/null 2>&1 ; then
+	echo "Please install 'expect'"
+	exit 1
+fi
+
 echo "Loading identity"
 IDENTITY=$(ssh-add -L)
 
