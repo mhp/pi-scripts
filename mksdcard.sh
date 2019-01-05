@@ -30,8 +30,19 @@ fi
 echo "Copying $(basename $IMAGE) to $CARD..."
 unzip -p $IMAGE *.img | sudo dd of=$CARD bs=4M conv=fsync status=progress
 
-# Mount vfat partition and update the boot stuff...
-P1=$(lsblk --list $CARD -o NAME,FSTYPE -np | grep vfat | cut -f 1 -d" ")
+echo "Looking for boot partition..."
+for retries in $(seq 5) ; do
+	# Mount vfat partition and update the boot stuff...
+	P1=$(lsblk --list $CARD -o NAME,FSTYPE -np | grep vfat | cut -f 1 -d" ")
+	[ -n "$P1" ] && break
+	sleep 1
+done
+
+if [ -z "$P1" ] ; then
+	echo "Can't find boot partition"
+	exit 1
+fi
+
 echo $P1 identified as boot partition, mounting...
 mp=$(mktemp -d)
 sudo mount $P1 $mp -o uid=$USER
