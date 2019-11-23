@@ -15,11 +15,16 @@ if ! which expect >/dev/null 2>&1 ; then
 	exit 1
 fi
 
-echo "Loading identity"
-IDENTITY=$(ssh-add -L)
+if [ -n "$KEYS" ] ; then
+	echo "Reading ssh keys: $KEYS..."
+	IDENTITY="$(cat $KEYS)"
+else
+	echo "Loading identity from ssh agent..."
+	IDENTITY="$(ssh-add -L)"
+fi
 
-if [ $(echo "$IDENTITY" | grep -c "^ssh") -ne 1 ] ; then
-	echo "Please add one key to the agent for provisioning"
+if [ $(echo "$IDENTITY" | grep -c "^ssh") -lt 1 ] ; then
+	echo "Please provide at least one key for provisioning"
 	exit 1
 fi
 
