@@ -2,7 +2,7 @@
 
 IMAGE=${IMAGE:-$(ls -1 ~/Downloads/*raspbian*.zip | tail -1)}
 CARD=${CARD:-/dev/mmcblk0}
-SSID=${SSID:-$(iwgetid --raw)}
+SSID=${SSID-$(iwgetid --raw)}
 
 if [ "$(zipinfo -1 $IMAGE | wc -l)" -ne 1 ] ; then
 	echo $IMAGE does not look like a raspbian download
@@ -50,18 +50,20 @@ sudo mount $P1 $mp -o uid=$USER
 echo Enabling ssh...
 touch $mp/ssh
 
-echo Configuring wifi for $SSID...
-cat <<-EOF >$mp/wpa_supplicant.conf
-	ctrl_interface=DIR=/var/run/wpa_supplicant GROUP=netdev
-	update_config=1
-	country=GB
+if [ -n "$SSID" ] ; then
+	echo Configuring wifi for $SSID...
+	cat <<-EOF >$mp/wpa_supplicant.conf
+		ctrl_interface=DIR=/var/run/wpa_supplicant GROUP=netdev
+		update_config=1
+		country=GB
 
-	network={
-	    ssid="$SSID"
-	    psk="$(nmcli -s --terse --fields 802-11-wireless-security.psk connection show $SSID | cut -d: -f2)"
-	    key_mgmt=WPA-PSK
-	}
-EOF
+		network={
+		    ssid="$SSID"
+		    psk="$(nmcli -s --terse --fields 802-11-wireless-security.psk connection show $SSID | cut -d: -f2)"
+		    key_mgmt=WPA-PSK
+		}
+	EOF
+fi
 
 echo Reducing GPU memory...
 echo "gpumem=16" >> $mp/config.txt
