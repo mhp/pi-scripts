@@ -2,7 +2,7 @@
 
 IMAGE=${IMAGE:-$(ls -1 ~/Downloads/*raspbian*.zip | tail -1)}
 CARD=${CARD:-/dev/mmcblk0}
-SSID=${SSID:-$(nmcli --terse --fields name connection show --active)}
+SSID=${SSID:-$(iwgetid --raw)}
 
 if [ "$(zipinfo -1 $IMAGE | wc -l)" -ne 1 ] ; then
 	echo $IMAGE does not look like a raspbian download
