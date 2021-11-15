@@ -1,11 +1,11 @@
 #!/bin/bash
 
-IMAGE=${IMAGE:-$(ls -1 ~/Downloads/*raspbian*.zip | tail -1)}
+IMAGE=${IMAGE:-$(ls -1 ~/Downloads/*-raspios-*.zip | tail -1)}
 CARD=${CARD:-/dev/mmcblk0}
 SSID=${SSID-$(iwgetid --raw)}
 
 if [ "$(zipinfo -1 $IMAGE | wc -l)" -ne 1 ] ; then
-	echo $IMAGE does not look like a raspbian download
+	echo $IMAGE does not look like a raspios download
 	zipinfo $IMAGE
 	exit 1
 fi
